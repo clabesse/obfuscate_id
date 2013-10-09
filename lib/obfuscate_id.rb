@@ -17,15 +17,29 @@ module ObfuscateId
     ScatterSwap.reverse_hash(id, spin)
   end
 
-
-  module ClassMethods
+  module ClassMethods        
+    def find_without_obfuscation(*args)
+      if has_obfuscated_id?
+        args[0] = if args[0].is_a?(Array)
+          args[0].map { |id| ObfuscateId.hide(id, self.obfuscate_id_spin) }
+        else
+          ObfuscateId.hide(args[0], self.obfuscate_id_spin)
+        end
+      end
+      find(*args)
+    end    
+    
     def find(*args)
       if has_obfuscated_id?
-        args[0] = ObfuscateId.show(args[0], self.obfuscate_id_spin)
+        args[0] = if args[0].is_a?(Array)
+          args[0].map { |id| ObfuscateId.show(id, self.obfuscate_id_spin) }
+        else
+          ObfuscateId.show(args[0], self.obfuscate_id_spin)
+        end
       end
       super(*args)
-    end
-
+    end    
+    
     def has_obfuscated_id?
       true
     end
@@ -40,7 +54,6 @@ module ObfuscateId
       end
       number.join.to_i
     end
-
   end
 
   module InstanceMethods
